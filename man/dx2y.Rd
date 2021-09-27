@@ -45,4 +45,9 @@ iris_species
 #>6      Species Sepal.Length         100 42.08
 #>7      Species  Sepal.Width         100 22.37
 #>8  Sepal.Width      Species         100 15.87
+
+# with a progress bar
+library(progressr)
+data(diamonds, package = "ggplot2")
+with_progress({diamonds_x2y <- dx2y(diamonds)})
 }

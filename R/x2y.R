@@ -194,6 +194,11 @@ x2y <- function(x, y, confidence = FALSE, sample_n = 5000) {
 #' #>6      Species Sepal.Length         100 42.08
 #' #>7      Species  Sepal.Width         100 22.37
 #' #>8  Sepal.Width      Species         100 15.87
+#'
+#' # with a progress bar
+#' library(progressr)
+#' data(diamonds, package = "ggplot2")
+#' with_progress({diamonds_x2y <- dx2y(diamonds)})
 
 dx2y <- function(df, target = NA, confidence = FALSE, sample_n=5000) {
   if (is.na(target)) {
@@ -212,18 +217,17 @@ dx2y <- function(df, target = NA, confidence = FALSE, sample_n=5000) {
 
   if (is.null(sample_n)) sample_n <- nrow(df)
   if (nrow(df)>sample_n) {
-    df <- dplyr::sample_n(seq_along(x), sample_n)
+    df <- dplyr::sample_n(df, sample_n)
   }
 
 
   results12 <- data.frame(x = names(df)[pairs[1,]],
                           y = names(df)[pairs[2,]])
-  if (n>30) {
+  if (n>300) {
     #  turn into multi-process with furrr + progressr
     furrr_options(seed=42)
     # TODO manage system specific cases
     plan(multisession, workers = 8)
-    progressr::with_progress({
       results36 <- future_map_dfr(seq(n), ~ {
         p()
         x2y(
@@ -232,11 +236,9 @@ dx2y <- function(df, target = NA, confidence = FALSE, sample_n=5000) {
           confidence = confidence,
           sample_n = sample_n
         )
-      })
     })
 
   } else {
-    progressr::with_progress({
       results36 <- purrr::map_dfr(seq(n), ~ {
         p()
         x2y(
@@ -245,7 +247,6 @@ dx2y <- function(df, target = NA, confidence = FALSE, sample_n=5000) {
           confidence = confidence,
           sample_n = sample_n
         )
-      })
     })
 
   }
