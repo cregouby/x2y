@@ -2,7 +2,8 @@
 col_names <- vroom::vroom("https://fr.openfoodfacts.org/data/fr.openfoodfacts.org.products.csv", delim="\t", n_max = 1) %>%
   names
 
-off <-  vroom::vroom(
+withr::with_options(list(timeout = 1800), {
+  off <-  vroom::vroom(
     "https://fr.openfoodfacts.org/data/fr.openfoodfacts.org.products.csv",
     delim = "\t",
     col_names = col_names,
@@ -10,7 +11,8 @@ off <-  vroom::vroom(
     trim_ws = TRUE,
     na = c("", "NA", "?"),
     progress = TRUE
-  )
+  )}
+)
 openfoodfacts <- off %>%
   filter(!is.na(nutriscore_grade)) %>%
   group_by(nutriscore_grade) %>% mutate(n=n()) %>%

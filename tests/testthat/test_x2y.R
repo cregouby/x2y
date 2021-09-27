@@ -14,7 +14,7 @@ test_that("x2y works with pure POSIXct",{
   y <- rpois(200, 200) %>% as.POSIXct(origin = lubridate::now())
   x2y_mi <- x2y(x, y)
   expect_equal(x2y_mi$perc_of_obs, 100)
-  expect_gt(x2y_mi$x2y, 0)
+  expect_gte(x2y_mi$x2y, 0)
 })
 
 test_that("x2y works with dates",{
@@ -48,7 +48,7 @@ test_that("x2y works with mixed POSIXct and character",{
 
 test_that("x2y works with list columns",{
   data(starwars, package="dplyr")
-  x <- starwars$films %>% slice(1:20)
+  x <- starwars[1:20,"films"]
   y <- sample(LETTERS, 20, replace = TRUE)
   x2y_mi <- x2y(x, y)
   expect_equal(x2y_mi$perc_of_obs, 100)
@@ -80,6 +80,7 @@ test_that("sample_n defaults allows human acceptable compute time",{
 })
 
 test_that("sample_n works",{
+  skip_on_cran()
   x <- rpois(1e4, 200)
   y <- rpois(1e4, 200)
 
@@ -96,7 +97,7 @@ test_that("sample_n works",{
   time <- tictoc::toc()
   duration2 <- time$toc - time$tic
 
-  expect_gte(abs(duration1 - duration2), 1)
+  expect_gte(abs(duration1 - duration2), 2)
 })
 
 

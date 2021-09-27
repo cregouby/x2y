@@ -57,16 +57,22 @@ x2y_inner <- function(x, y) {
   if (mode(y)=="numeric") y <- as.numeric(y)
 
   # naive cast of list vectors
-  if (mode(x)=="list") x <- x %>% as.character %>% as.factor
-  if (mode(y)=="list") y <- x %>% as.character %>% as.factor
+  if (mode(x)=="list") x <- x %>% as.character
+  if (mode(y)=="list") y <- y %>% as.character
 
+  # cast text (and thus lists) vectors into factor
+  if (mode(x)=="character") x <- x %>% as.factor
+  if (mode(y)=="character") y <- y %>% as.factor
+
+  if (is.factor(x) & nlevels(x) == nlevels(y)) {
+    return(0)
+  } else if (is.numeric(y) && !is.factor(y)) {
   # if y is continuous
-  if (is.numeric(y) && !is.factor(y)) {
     preds <- predict(rpart(y ~ x, method = "anova"), type = 'vector')
     return(calc_mae_reduction(preds, y))
-  }
+  } else {
   # if y is categorical
-  else {
+
     preds <- predict(rpart(y ~ x, method = "class"), type = 'class')
     return(calc_misclass_reduction(preds, y))
   }
@@ -223,7 +229,8 @@ dx2y <- function(df, target = NA, confidence = FALSE, sample_n=5000) {
 
   results12 <- data.frame(x = names(df)[pairs[1,]],
                           y = names(df)[pairs[2,]])
-  if (n>300) {
+  if (n<= -1) {
+    # TODO BUG turns out to be a very bad idea
     #  turn into multi-process with furrr + progressr
     furrr_options(seed=42)
     # TODO manage system specific cases
