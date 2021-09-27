@@ -97,7 +97,8 @@ test_that("sample_n works",{
   time <- tictoc::toc()
   duration2 <- time$toc - time$tic
 
-  expect_gte(abs(duration1 - duration2), 2)
+  expect_lte(duration1, 0.1)
+  expect_gte(abs(duration1 - duration2), 1.5)
 })
 
 
