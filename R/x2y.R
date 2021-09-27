@@ -56,19 +56,19 @@ x2y_inner <- function(x, y) {
   if (mode(x)=="numeric") x <- as.numeric(x)
   if (mode(y)=="numeric") y <- as.numeric(y)
 
+  # naive cast of list vectors
+  if (mode(x)=="list") x <- x %>% as.character %>% as.factor
+  if (mode(y)=="list") y <- x %>% as.character %>% as.factor
+
   # if y is continuous
   if (is.numeric(y) && !is.factor(y)) {
     preds <- predict(rpart(y ~ x, method = "anova"), type = 'vector')
-    calc_mae_reduction(preds, y)
+    return(calc_mae_reduction(preds, y))
   }
-  # naive cast of list vectors
-  if (mode(x)=="list") x <- as.character(x)
-  if (mode(y)=="list") y <- as.character(y)
-
   # if y is categorical
   else {
     preds <- predict(rpart(y ~ x, method = "class"), type = 'class')
-    calc_misclass_reduction(preds, y)
+    return(calc_misclass_reduction(preds, y))
   }
 }
 
@@ -170,6 +170,7 @@ x2y <- function(x, y, confidence = FALSE, sample_n = 5000) {
 #' @importFrom purrr map_dfr
 #' @importFrom future plan multisession
 #' @importFrom furrr future_map_dfr furrr_options
+#' @importFrom stats predict quantile
 #' @export
 #'
 #' @examples

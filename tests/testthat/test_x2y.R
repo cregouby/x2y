@@ -40,10 +40,22 @@ test_that("x2y works with mixed POSIXct and character",{
   y <- sample(LETTERS, 200, replace = TRUE)
   x2y_mi <- x2y(x, y)
   expect_equal(x2y_mi$perc_of_obs, 100)
-  expect_gte(x2y_mi$x2y, 0)
+  expect_gt(x2y_mi$x2y, 0)
   x2y_mi <- x2y(y, x)
   expect_equal(x2y_mi$perc_of_obs, 100)
-  expect_gte(x2y_mi$x2y, 0)
+  expect_gt(x2y_mi$x2y, 0)
+})
+
+test_that("x2y works with list columns",{
+  data(starwars, package="dplyr")
+  x <- starwars$films %>% slice(1:20)
+  y <- sample(LETTERS, 20, replace = TRUE)
+  x2y_mi <- x2y(x, y)
+  expect_equal(x2y_mi$perc_of_obs, 100)
+  expect_gt(x2y_mi$x2y, 0)
+  x2y_mi <- x2y(y, x)
+  expect_equal(x2y_mi$perc_of_obs, 100)
+  expect_gt(x2y_mi$x2y, 0)
 })
 
 test_that("sample_n defaults allows human acceptable compute time",{
