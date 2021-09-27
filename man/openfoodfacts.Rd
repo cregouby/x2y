@@ -5,7 +5,7 @@
 \alias{openfoodfacts}
 \title{Grocery products facts.}
 \format{
-A data frame with 200 rows and 59 variables:
+A data frame with 1000 rows and 59 variables:
 \describe{
 \item{product_name}{product name}
 \item{nutriscore_grade}{a grading of the nutricial quality of the product}
@@ -15,7 +15,7 @@ A data frame with 200 rows and 59 variables:
 }
 }
 \source{
-\url{http://www.diamondse.info/}
+\url{https://world.openfoodfacts.org/data/data-fields.txt}
 }
 \usage{
 openfoodfacts
