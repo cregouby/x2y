@@ -2,16 +2,47 @@
 % Please edit documentation in R/x2y.R
 \name{x2y}
 \alias{x2y}
-\title{Title}
+\title{Compute mutual information between two vectors}
 \usage{
 x2y(x, y, confidence = FALSE, sample_n = 5000)
 }
 \arguments{
-\item{sample_n}{}
+\item{x}{first vector}
+
+\item{y}{second vector}
+
+\item{confidence}{boolean, shall we compute 95\% confidence interval (default FALSE)}
+
+\item{sample_n}{max number of sample to consider (default 5000 )}
 }
 \value{
-
+a list with \code{perc_of_obs} percentage of observations present in the two vectors,
+\code{x2y} mutual information value and eventually \code{CI_95_Lower} and \code{CI_95_Upper} values.
 }
 \description{
-Title
+Compute mutual information between two vectors
+}
+\examples{
+x2y(iris$Sepal.Length, iris$Species)
+#>$perc_of_obs
+#>[1] 100
+#>
+#>$x2y
+#>[1] 62
+
+x2y(iris$Sepal.Length, iris$Species, confidence = TRUE)
+#>$perc_of_obs
+#>[1] 100
+#>
+#>$x2y
+#>[1] 62
+#>
+#>$CI_95_Lower
+#>97.5\%
+#>51.08
+#>
+#>$CI_95_Upper
+#>2.5\%
+#>70.15
+
 }

@@ -4,21 +4,22 @@
 \alias{dx2y}
 \title{Compute the mutual information between dataframe columns}
 \usage{
-dx2y(d, target = NA, confidence = FALSE, sample_n = 5000)
+dx2y(df, target = NA, confidence = FALSE, sample_n = 5000)
 }
 \arguments{
-\item{d}{dataframe to compare columns}
+\item{df}{dataframe to compare columns}
 
 \item{target}{(optional) the outcome column if any}
 
 \item{confidence}{Boolean, shall we compute the 95\% Confidence interval (default FALSE)}
 
-\item{sample_n}{max number of sample to consider (default 50k )}
+\item{sample_n}{max number of sample to consider (default 5000 )}
 }
 \value{
-a dataframe with columns \code{x} and \code{y} with all combinations of column pairs
-and for each pair a \code{perc_of_obs} for the percentage of observations present,
-and  \code{x2y} value of the mutual information between those two columns
+a dataframe with columns \code{x} and \code{y} filled with all combinations of column pairs
+(when \code{target} is NA), or with all combinations of column with target (if \code{target} is given)
+with a \code{perc_of_obs} column for the percentage of observations present,
+and  \code{x2y} value of the mutual information between the two columns.
 }
 \description{
 Compute the mutual information between dataframe columns
@@ -26,4 +27,22 @@ Compute the mutual information between dataframe columns
 \examples{
 pairwise_iris <- dx2y(iris)
 head(pairwise_iris)
+#>              x            y perc_of_obs   x2y
+#>1  Petal.Length      Species         100 89.94
+#>2   Petal.Width      Species         100 88.97
+#>3   Petal.Width Petal.Length         100 80.73
+#>4       Species Petal.Length         100 79.72
+#>5  Petal.Length  Petal.Width         100 77.32
+
+iris_species <- dx2y(iris, target="Species")
+iris_species
+#>x            y perc_of_obs   x2y
+#>1 Petal.Length      Species         100 89.94
+#>2  Petal.Width      Species         100 88.97
+#>3      Species Petal.Length         100 79.72
+#>4      Species  Petal.Width         100 76.31
+#>5 Sepal.Length      Species         100 47.09
+#>6      Species Sepal.Length         100 42.08
+#>7      Species  Sepal.Width         100 22.37
+#>8  Sepal.Width      Species         100 15.87
 }
