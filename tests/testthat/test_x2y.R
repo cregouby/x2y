@@ -1,6 +1,6 @@
 library(testthat)
 library(dplyr)
-source("~/_Data.science/R/x2y.R")
+source("x2y.R")
 test_that("x2y works with pure POSIXct",{
   x <- rpois(200, 200) %>% as.POSIXct(origin = lubridate::now())
   y <- rpois(200, 200) %>% as.POSIXct(origin = lubridate::now())

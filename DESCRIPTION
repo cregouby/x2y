@@ -1,0 +1,24 @@
+Package: x2y
+Title: Dataframe Predictive Power through Column to Coumn Mutual Information
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "Christophe",
+           family = "Regouby",
+           role = c("aut", "cre"),
+           email = "christophe.regouby@free.fr",
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+Description: Provides large dataframe with column-to-column mutual information gain, so that you can 
+  remove noise or redundant column based on their information gain for a machine learning modeling.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.2
+Imports:
+  dplyr,
+  rpart,
+  furrr,
+  progressr
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3

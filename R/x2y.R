@@ -1,17 +1,22 @@
 # thanks to https://github.com/rama100/x2y/blob/main/x2y.R
-require(dplyr)
-require(rpart)
-require(furrr)
-require(progressr)
-furrr_options(seed=42)
-plan(multisession, workers = 8)
 
 # TODO add a col selector function
+#' filter columns of a dx2y dataframe result based on a minimal mutual-information
+#'
+#' @param dx2y_df dataframe result of a dx2y function
+#' @param threshold minimum mutual-information value to keep a column
+#' @param keep method to choose the column to keeep. only "first" is implemented
+#'
+#' @return a vector of column names from the original dataframe
+#' @export
+#'
+#' @examples
+#'
 get_high_mi_cols <- function(dx2y_df, threshold=99, keep="first") {
   if (keep!="first") {
     rlang::abort("'longest' method is not implemented yet")
   }
-  dx2y_df %>% filter(x2y >= threshold) %>% pull(y) %>% unique
+  dx2y_df %>% filter(x2y >= threshold) %>% dplyr::pull(y) %>% unique
 }
 
 calc_mae_reduction <- function(y_hat, y_actual) {
@@ -41,23 +46,23 @@ calc_misclass_reduction <- function(y_hat, y_actual) {
 }
 
 x2y_inner <- function(x, y) {
-  
+
   if (length(unique(x)) == 1 |
       length(unique(y)) == 1 ) {
     return(NA)
-  } 
+  }
   # cast POSIXct, dates, difftime, ...
   if (mode(x)=="numeric") x <- as.numeric(x)
   if (mode(y)=="numeric") y <- as.numeric(y)
 
   # if y is continuous
   if (is.numeric(y) && !is.factor(y)) {
-    preds <- predict(rpart(y ~ x, method = "anova"), type = 'vector')
+    preds <- predict(rpart::rpart(y ~ x, method = "anova"), type = 'vector')
     calc_mae_reduction(preds, y)
   }
   # if y is categorical
   else {
-    preds <- predict(rpart(y ~ x, method = "class"), type = 'class')
+    preds <- predict(rpart::rpart(y ~ x, method = "class"), type = 'class')
     calc_misclass_reduction(preds, y)
   }
 }
@@ -68,24 +73,35 @@ simple_boot <- function(x,y) {
   x2y_inner(x[ids], y[ids])
 }
 
+#' Title
+#'
+#' @param x
+#' @param y
+#' @param confidence
+#' @param sample_n
+#'
+#' @return
+#' @export
+#'
+#' @examples
 x2y <- function(x, y, confidence = FALSE, sample_n = 5000) {
   results <- list()
-  
+
   missing <-  is.na(x) | is.na(y)
   results$perc_of_obs <- round(100 * (1 - sum(missing) / length(x)), 2)
-  
+
   x <- x[!missing]
   y <- y[!missing]
-  
+
   if (is.null(sample_n)) sample_n <- length(x)
   if (length(x)>sample_n) {
     ids <- sample(length(x), sample_n)
     x <- x[ids]
     y <- y[ids]
   }
-  
+
   results$x2y <- x2y_inner(x, y)
-  
+
   if (confidence) {
     results$CI_95_Lower = NA
     results$CI_95_Upper = NA
@@ -104,6 +120,24 @@ x2y <- function(x, y, confidence = FALSE, sample_n = 5000) {
   results
 }
 
+#' Compute the mutual information between dataframe columns
+#'
+#' @param d dataframe to compare columns
+#' @param target (optional) the outcome column if any
+#' @param confidence Boolean, shall we compute the 95% Confidence interval (default FALSE)
+#' @param sample_n max number of sample to consider (default 50k )
+#'
+#' @return a dataframe with columns `x` and `y` with all combinations of column pairs
+#'  and for each pair a `perc_of_obs` for the percentage of observations present,
+#'  and  `x2y` value of the mutual information between those two columns
+#'
+#' @importFrom magrittr %>%
+#' @importFrom dplyr filter, pull, arrange, bind_cols, desc
+#' @export
+#'
+#' @examples
+#' pairwise_iris <- dx2y(iris)
+#' head(pairwise_iris)
 dx2y <- function(d, target = NA, confidence = FALSE, sample_n=5000) {
   if (is.na(target)) {
     pairs <- combn(ncol(d), 2)
@@ -115,32 +149,35 @@ dx2y <- function(d, target = NA, confidence = FALSE, sample_n=5000) {
     n <- n[n != idx]
     pairs <- cbind(rbind(n, idx), rbind(idx, n))
   }
-  
+
   n <- dim(pairs)[2]
   p <- progressr::progressor(steps = n)
-  
+
   if (is.null(sample_n)) sample_n <- length(x)
   if (length(d)>sample_n) {
     d <- dplyr::sample_n(seq_along(x), sample_n)
   }
-  
-  
+
+
   results12 <- data.frame(x = names(d)[pairs[1,]],
                           y = names(d)[pairs[2,]])
   #  turn multi-process with furrr + progressr
-  results36 <- future_map_dfr(seq(n), ~{
+  furrr::furrr_options(seed=42)
+  # TODO manage system specific cases
+  future::plan(future::multisession, workers = 8)
+  results36 <- furrr::future_map_dfr(seq(n), ~{
     p()
     x2y(d %>% pull(pairs[1, .x]), d %>% pull(pairs[2, .x]), confidence = confidence, sample_n = sample_n)
     })
- 
+
   results <- bind_cols(results12, results36) %>%
     arrange(desc(x2y), desc(perc_of_obs))
-  
+
   results
 }
 step_mutual_information <- function(df, mutual_information, ...) {
   df_x2y <- dx2y(df ,...)
-  high_mi_df <- df_x2y %>% filter(x2y >= 99) 
+  high_mi_df <- df_x2y %>% filter(x2y >= 99)
   high_mi_cols <- high_mi_df %>% pull(y) %>% unique
-  df <- df %>% select(-high_mi_cols) 
+  df <- df %>% dplyr::select(-high_mi_cols)
 }
