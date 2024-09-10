@@ -1,5 +1,5 @@
 Package: x2y
-Title: Dataframe Predictive Power through Column to Coumn Mutual Information
+Title: Dataframe Predictive Power through Column-to-Column Mutual Information
 Version: 0.0.0.9000
 Authors@R: 
     person(given = "Christophe",
